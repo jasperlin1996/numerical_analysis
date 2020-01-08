@@ -3,6 +3,7 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 #define H 21
 #define EDGE_L 30
@@ -27,23 +28,29 @@ double matrix_inf_norm(vector<vector<double>> &T){
 int SOR(vector<vector<double>> &T, fstream& file, double omega = 1.0){
     // sourse temperature
     vector<double> s(H*H, 0.1);
-    s[(H*H)/2] = -5.0; // Heat sourse, i'm not sure
+    s[(H*H)/2] = -50.0; // Heat sourse, i'm not sure
 
     double Tn_norm = 10.0, Tn1_norm = matrix_inf_norm(T);
     int iter = 0;
     stringstream ss;
-
+    ss << fixed << setprecision(4);
     while(fabs(Tn_norm - Tn1_norm) > 0.00001 ){
         ss << "Iteration = " << iter << endl;
         cout << "Iteration = " << iter++ << endl;
-
+        double h = 1.0/H;
+        double d = 0.0;
         for(int i = 0; i < H - 1; i++){ // 19*19
             for(int j = 1; j < H - 1; j++){
                 double ek = 0.0;
-                if (i != 0) ek = s[i*H + j]*(1.0/(H*H)) - (-4.0*T[i][j] + T[i-1][j] + T[i+1][j] + T[i][j-1] + T[i][j+1]); // /(double)((H-1)*(H-1));
-                else ek = s[i*H + j] - (-4.0*T[i][j] + T[i+1][j] + T[i][j-1] + T[i][j+1]); // /(double)((H-1)*H);
-                // cout << ek << endl;
-                T[i][j] = T[i][j] + (omega/-4)*ek;
+                if (i != 0) {
+                    ek = s[i*H + j]*h*h - (-4.0*T[i][j] + T[i-1][j] + T[i+1][j] + T[i][j-1] + T[i][j+1]);
+                    T[i][j] = T[i][j] + (omega/-4)*ek;
+                }
+                else {
+                    ek = s[i*H + j]*h*d - (T[i][j] - T[i+1][j]);
+                    T[i][j] = T[i][j] + (omega/1)*ek;
+                }
+                
             }
         }
         for(int i = H-1; i >= 0; i--){
@@ -71,6 +78,7 @@ int experiment(string filename, double omega = 1.0){
         temp[temp.size() - 1][i] = EDGE_B;
     }
     int iter = SOR(temp, file, omega);
+    cout << fixed << setprecision(4);
     for(int i = 0; i < H; i++){
         for(int j = 0; j < H; j++){
             cout << temp[i][j] << '\t';
