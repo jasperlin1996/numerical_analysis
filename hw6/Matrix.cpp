@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#define PRECISION 15
+#define PRECISION 5
 using namespace std;
 
 Matrix::Matrix(){
