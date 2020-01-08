@@ -7,8 +7,8 @@
 
 #define H 21
 #define EDGE_L 30
-#define EDGE_R 30
-#define EDGE_B 20
+#define EDGE_R 20
+#define EDGE_B 15
 
 using namespace std;
 
