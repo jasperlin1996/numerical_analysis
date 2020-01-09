@@ -1,12 +1,25 @@
+/* Hint for myself:
+    The point of max heap version is at function: update_A_mtx().
+    The function will update Matrix A 
+
+        A[p][k] = A[k][p] = Bp[k];
+        A[q][k] = A[k][q] = Bq[k];
+
+    in a for-loop execute k times, which means that if we maintain
+    the Matrix A here, we will be able to peek the max entry in
+    O(2logN) + O(1) = O(2logN) as the heap provides to us.
+*/
+
 #define _USE_MATH_DEFINES
 #define _EPSILON 1e-6
 #include "Matrix.h"
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include <cassert>
 #include <vector>
 #include <random>
+#include <fstream>
+#include <cassert>
 #include <algorithm>
 #include <functional>
 
@@ -45,6 +58,18 @@ Matrix gen_sym_mtx(int n){
     return A;
 }
 
+vector<double> flatten(Matrix A){
+    int rows = A.getShape().first;
+    int cols = A.getShape().second;
+    vector<double> flattened(rows*cols, 0.0);
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+            flattened[i*rows + j] = A[i][j];
+        }
+    }
+    return flattened;
+}
+
 double max_off_diag_entry(Matrix &A, int &p, int &q){ // No heap version
     // Suppose A is a symmetric matrix
     int rows = A.getShape().first, cols = A.getShape().second;
@@ -52,7 +77,7 @@ double max_off_diag_entry(Matrix &A, int &p, int &q){ // No heap version
     
     for(int i = 0; i < rows; i++){
         for(int j = 0; j < cols; j++){
-            if(i != j && fabs(A[i][j]) > max_value) { // Not sure absolute is needed
+            if(i != j && fabs(A[i][j]) > max_value) {
                 max_value = fabs(A[i][j]);
                 p = i;
                 q = j;
@@ -87,55 +112,83 @@ void update_A_mtx(Matrix &A, int p, int q, double c, double s){
             Bq[r] = -s*A[r][p] + c*A[r][q];
         }
     }
-    for(int k = 0; k < n; k++){
+    for(int k = 0; k < n; k++){ 
         A[p][k] = A[k][p] = Bp[k];
         A[q][k] = A[k][q] = Bq[k];
     }
     A[p][q] = A[q][p] = 0.0;
 }
 
-Matrix jacobian(Matrix m){
+pair<Matrix, Matrix> jacobian(Matrix m, ostream &os){
+
+    fstream file("offDiagVar.txt", ios::out);
+
     Matrix A(m);
     int rows = A.getShape().first, cols = A.getShape().first, p, q, iterations = 0;
     Matrix P = Matrix::identity(rows, cols);
     double Apq = max_off_diag_entry(A, p, q);
+
     while(fabs(Apq) > _EPSILON){
         iterations++;
-        // cout << iterations << endl;
         double theta = atan((A[p][q] * 2.0)/(A[p][p] - A[q][q]))/2.0;
         double c = cos(theta);
         double s = sin(theta);
         update_P_mtx(P, p, q, c, s); // P = P*R;
         update_A_mtx(A, p, q, c, s); // B = R.T()*A*R;
         Apq = max_off_diag_entry(A, p, q);
+        double offDiag = 0.0;
+        // Store offDiag[k]
+        for(int i = 0; i < rows; i++){
+            for(int j = i + 1; j < cols; j++){
+                offDiag += fabs(A[i][j]);
+            }
+        }
+        file << iterations << ' ' << offDiag << endl;
     }
-    cout << "A: \n" << m << endl;
+    file.close();
     cout << A;
-    cout << P;
-    cout << (A-m)*P;
-    cout << "Iterations: " << iterations << endl;
+    // N = 3 ~ 25
+    os << rows << ' ' << iterations << endl;
+    return make_pair(A, P); // pair<eigenvalue, eigenvector>
 }
 
-void unit_test(){
-    int n = 7, p = 0, q = 0;
-    vector<vector<double>> A(n, vector<double>(n, 0.0));
-    Matrix m = gen_sym_mtx(A, n);
-    assert(max_off_diag_entry(m, p, q) == A[p][q]);
-    // jacobian(m);
-    // cout << m;
+double inf_norm(Matrix &A){
+    int rows = A.getShape().first, cols = A.getShape().second;
+    double norm = 0.0;
+    for(int i = 0; i < rows; i++){
+        double tmp = 0.0;
+        for(int j = 0; j < cols; j++){
+            tmp += fabs(A[i][j]);
+        }
+        if(tmp >= norm) norm = tmp;
+    }
+    return norm;
+}
+
+void experiment(ostream &os){
+    Matrix A;
+    for(int N = 3; N <= 25; N++){
+        A = gen_sym_mtx(N);
+        pair<Matrix, Matrix> eigen = jacobian(A, os);
+        // os << "Eigen Values: " << eigen.first;
+        // os << "Eigen Vectors: " << eigen.second;
+        // os << "V * V.T: " << eigen.second*eigen.second.T();
+    }
 }
 
 int main(){
-    // double **A;
-    unit_test();
-    vector<vector<double>> testing_matrix = {
-        {4.0, 7.0, 18.0, 16.0},
-        {7.0, 14.0, 16.0, 7.0},
-        {18.0, 16.0, 13.0, 10.0},
-        {16.0, 7.0, 10.0, 2.0}
-    };
-    Matrix A(testing_matrix);
-    // Matrix A = gen_sym_mtx(7);
-    jacobian(A);
-    // cout << A;
+    Matrix A = gen_sym_mtx(4);
+    cout << "After jacobian procedure: ";
+    pair<Matrix, Matrix> eigen = jacobian(A, cout);
+    cout << "Eigen Values: " << eigen.first;
+    cout << "Eigen Vectors: " << eigen.second;
+
+    Matrix tmp = A*eigen.second - eigen.first*eigen.second;
+    cout << "INF Norm: " << inf_norm(tmp) << endl;
+    cout << tmp;
+
+    cout << "V * V.T: " << eigen.second*eigen.second.T();
+    // fstream file("result.txt", ios::out);
+    // experiment(file);
+    // file.close();
 }

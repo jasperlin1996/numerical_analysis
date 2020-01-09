@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#define PRECISION 5
+#define PRECISION 8
 using namespace std;
 
 Matrix::Matrix(){
@@ -39,8 +39,9 @@ ostream& operator<<(ostream &os, Matrix const &m){
     os << m.shape.first << ", " << m.shape.second << endl;
     os << fixed << setprecision(PRECISION);
     for(auto i = 0 ; i < m.data.size(); i++){
+        os << ' ';
         for(auto j = 0; j < m.data[i].size(); j++){
-            os << m.data[i][j] << (j == (m.data[i].size() - 1) ? '\n' : ' ');
+            os << m.data[i][j] << (j == (m.data[i].size() - 1) ? '\n' : '\t');
         }
     }
     return os;
