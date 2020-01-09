@@ -118,7 +118,7 @@ pair<Matrix, Matrix> jacobian(Matrix m, ostream &os){
 
     while(fabs(Apq) > _EPSILON){
         iterations++;
-        double theta = atan((A[p][q] * 2.0)/(A[p][p] - A[q][q]))/2.0;
+        double theta = atan2((A[p][q] * 2.0), (A[p][p] - A[q][q]))/2.0;
         double c = cos(theta);
         double s = sin(theta);
         update_P_mtx(P, p, q, c, s); // P = P*R;
@@ -165,18 +165,33 @@ void experiment(ostream &os){
 }
 
 int main(){
-    Matrix A = gen_sym_mtx(4);
-    cout << "After jacobian procedure: ";
-    pair<Matrix, Matrix> eigen = jacobian(A, cout);
-    cout << "Eigen Values: " << eigen.first;
-    cout << "Eigen Vectors: " << eigen.second;
+//     Matrix A = gen_sym_mtx(4);
+//     cout << "After jacobian procedure: ";
+//     pair<Matrix, Matrix> eigen = jacobian(A, cout);
+//     cout << "Eigen Values: " << eigen.first;
+//     cout << "Eigen Vectors: " << eigen.second;
 
-    Matrix tmp = A*eigen.second - eigen.first*eigen.second;
-    cout << "INF Norm: " << inf_norm(tmp) << endl;
-    cout << tmp;
+// //  
+//     Matrix eigenvalue(1, 4);
+//     Matrix eigenvector(1, 4);
+//     for(int i = 0; i < 4; i++){
+//         eigenvalue[0][i] = eigen.first[i][i];
+//         for(int j = 0; j < 4; j++){
+//             eigenvector[0][j] = eigen.second[j][i];
+//         }
+//         // cout << A*eigenvector.T();
+//         // cout << eigenvalue*eigenvector.T();
+//         Matrix tmp = A*eigenvector.T() - eigenvector.T()*eigenvalue[0][i];
+//         cout << "INF Norm: " << inf_norm(tmp) << endl;
+//         cout << tmp;
+//     }
 
-    cout << "V * V.T: " << eigen.second*eigen.second.T();
-    // fstream file("result.txt", ios::out);
-    // experiment(file);
-    // file.close();
+// //
+//     cout << "V * V.T: " << eigen.second*eigen.second.T();
+
+//     cout << "\n\n";
+
+    fstream file("result.txt", ios::out);
+    experiment(file);
+    file.close();
 }

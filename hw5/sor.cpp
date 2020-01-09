@@ -9,6 +9,7 @@
 #define EDGE_L 30
 #define EDGE_R 30
 #define EDGE_B 20
+#define SIZE 11
 
 using namespace std;
 
@@ -27,7 +28,7 @@ double matrix_inf_norm(vector<vector<double>> &T){
 
 int SOR(vector<vector<double>> &T, fstream& file, double omega = 1.0){
     // sourse temperature
-    vector<double> s(H*H, 0.1);
+    vector<double> s(H*H, 0.0);
     s[(H*H)/2] = -50.0; // Heat sourse, i'm not sure
 
     double Tn_norm = 10.0, Tn1_norm = matrix_inf_norm(T);
@@ -90,17 +91,16 @@ int experiment(string filename, double omega = 1.0){
 }
 
 int main(){
-    int size = 11;
-    double exps_omega[size] = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.85, 1.9};
-    string file_omega[size] = {"1_0", "1_1", "1_2", "1_3", "1_4", "1_5", "1_6", "1_7", "1_8", "1_85", "1_9"};
-    fstream file("omega_compare.txt", ios::out);
-    for(int i = 0; i < size; i++){
-        int iter = experiment("result_" + file_omega[i] + ".txt", exps_omega[i] );
-        file << exps_omega[i] << " " << iter << endl;
-    }
-    file.close();
+    // double exps_omega[SIZE] = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.85, 1.9};
+    // string file_omega[SIZE] = {"1_0", "1_1", "1_2", "1_3", "1_4", "1_5", "1_6", "1_7", "1_8", "1_85", "1_9"};
+    // fstream file("omega_compare.txt", ios::out);
+    // for(int i = 0; i < SIZE; i++){
+    //     int iter = experiment("result_" + file_omega[i] + ".txt", exps_omega[i] );
+    //     file << exps_omega[i] << " " << iter << endl;
+    // }
+    // file.close();
 
     // Exp 1
     // experiment("result_GS.txt", 1.0);
-    // experiment("result_SOR.txt", 1.2);
+    experiment("result_1_8.txt", 1.8);
 }
