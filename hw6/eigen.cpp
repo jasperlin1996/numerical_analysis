@@ -1,15 +1,3 @@
-/* Hint for myself:
-    The point of max heap version is at function: update_A_mtx().
-    The function will update Matrix A 
-
-        A[p][k] = A[k][p] = Bp[k];
-        A[q][k] = A[k][q] = Bq[k];
-
-    in a for-loop execute k times, which means that if we maintain
-    the Matrix A here, we will be able to peek the max entry in
-    O(2logN) + O(1) = O(2logN) as the heap provides to us.
-*/
-
 #define _USE_MATH_DEFINES
 #define _EPSILON 1e-6
 #include "Matrix.h"
